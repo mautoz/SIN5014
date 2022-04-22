@@ -274,6 +274,11 @@ if __name__ == "__main__":
         type=str,
         help="Path where we save the histogram and the image after effects",
     )
+    parser.add_argument(
+        "--brightness",
+        type=int,
+        help="Number between -255 and 255",
+    )
     args = parser.parse_args()
 
     # Histogram for the original picture
@@ -291,7 +296,7 @@ if __name__ == "__main__":
     )
 
     # Histogram for the picture after brightness
-    new_image = change_brightness(img_matrix, 10)
+    new_image = change_brightness(img_matrix, args.brightness)
 
     save_image(
         new_image,
