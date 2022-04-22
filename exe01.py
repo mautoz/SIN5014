@@ -32,7 +32,7 @@ def get_image_shape(img_matrix: array):
 
 def get_frequencies_arrays(img_matrix: array) -> Tuple[array, array, array]:
     """
-    Read the matrix and
+    Read the matrix and count the frequency of RGB.
 
     Parameters
     ----------
@@ -105,9 +105,9 @@ def change_brightness(img_matrix: array, level: int) -> array:
     return img_matrix
 
 
-def get_neighborhood_average(img_matrix: array, w: int, h: int, color: int) -> float:
+def get_neighborhood(img_matrix: array, w: int, h: int, color: int) -> float:
     """
-    Read an image matrix and apply the level of `brightness` you want to change.
+    Read the pixel (w, h, c) of the matrix image.
 
     Parameters
     ----------
@@ -122,7 +122,7 @@ def get_neighborhood_average(img_matrix: array, w: int, h: int, color: int) -> f
 
     Returns
     -------
-        An array with the RGB
+        An array with the neighborhood of a pixel
     """
     return [
         img_matrix[w - 1][h - 1][color],
@@ -138,7 +138,7 @@ def get_neighborhood_average(img_matrix: array, w: int, h: int, color: int) -> f
 
 def calculate_image_average(img_matrix: array) -> array:
     """
-    Read an image matrix and
+    Read an image matrix and calculate the average for each pixel
 
     Parameters
     ----------
@@ -154,22 +154,16 @@ def calculate_image_average(img_matrix: array) -> array:
 
     for w in range(1, width - 1):
         for h in range(1, height - 1):
-            img_matrix[w][h][0] = calculate_average(
-                get_neighborhood_average(img_aux, w, h, 0)
-            )
-            img_matrix[w][h][1] = calculate_average(
-                get_neighborhood_average(img_aux, w, h, 1)
-            )
-            img_matrix[w][h][2] = calculate_average(
-                get_neighborhood_average(img_aux, w, h, 2)
-            )
+            img_matrix[w][h][0] = calculate_average(get_neighborhood(img_aux, w, h, 0))
+            img_matrix[w][h][1] = calculate_average(get_neighborhood(img_aux, w, h, 1))
+            img_matrix[w][h][2] = calculate_average(get_neighborhood(img_aux, w, h, 2))
 
     return img_matrix
 
 
 def calculate_image_median(img_matrix: array) -> array:
     """
-    Read an array of frequencies, show the histogram and save the image.
+    Read an image matrix and calculate the median for each pixel
 
     Parameters
     ----------
@@ -185,15 +179,9 @@ def calculate_image_median(img_matrix: array) -> array:
 
     for w in range(1, width - 1):
         for h in range(1, height - 1):
-            img_matrix[w][h][0] = calculate_median(
-                get_neighborhood_average(img_aux, w, h, 0)
-            )
-            img_matrix[w][h][1] = calculate_median(
-                get_neighborhood_average(img_aux, w, h, 1)
-            )
-            img_matrix[w][h][2] = calculate_median(
-                get_neighborhood_average(img_aux, w, h, 2)
-            )
+            img_matrix[w][h][0] = calculate_median(get_neighborhood(img_aux, w, h, 0))
+            img_matrix[w][h][1] = calculate_median(get_neighborhood(img_aux, w, h, 1))
+            img_matrix[w][h][2] = calculate_median(get_neighborhood(img_aux, w, h, 2))
 
     return img_matrix
 
