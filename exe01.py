@@ -4,7 +4,6 @@ from numpy import array
 import matplotlib.pyplot as plt
 import argparse
 import os
-import numpy as np
 
 
 def get_image_matrix(img_path: str) -> array:
@@ -16,59 +15,57 @@ def get_image_shape(img_matrix: array):
     return img_matrix.shape
 
 
-def get_frequencies_arrays(img_path: str) -> Tuple[array, array, array]:
+def get_frequencies_arrays(img_matrix: array) -> Tuple[array, array, array]:
     red = [0] * 256
     green = [0] * 256
     blue = [0] * 256
 
-    img = get_image_matrix(img_path)
-    width, height, _ = get_image_shape(img)
+    width, height, _ = get_image_shape(img_matrix)
 
     for w in range(width):
         for h in range(height):
-            red[img[w][h][0]] += 1
-            green[img[w][h][1]] += 1
-            blue[img[w][h][2]] += 1
+            red[img_matrix[w][h][0]] += 1
+            green[img_matrix[w][h][1]] += 1
+            blue[img_matrix[w][h][2]] += 1
 
     return red, green, blue
 
 
-def change_brightness(img_path: str, level: int) -> array:
-    img = get_image_matrix(img_path)
-    width, height, _ = get_image_shape(img)
+def change_brightness(img_matrix: array, level: int) -> array:
+    width, height, _ = get_image_shape(img_matrix)
 
     for w in range(width):
         for h in range(height):
-            r_new_level = img[w][h][0] + level
-            g_new_level = img[w][h][1] + level
-            b_new_level = img[w][h][2] + level
+            r_new_level = img_matrix[w][h][0] + level
+            g_new_level = img_matrix[w][h][1] + level
+            b_new_level = img_matrix[w][h][2] + level
 
             if r_new_level < 0:
-                img[w][h][0] = 0
+                img_matrix[w][h][0] = 0
             elif r_new_level > 255:
-                img[w][h][0] = 255
+                img_matrix[w][h][0] = 255
             else:
-                img[w][h][0] = r_new_level
+                img_matrix[w][h][0] = r_new_level
 
             if g_new_level < 0:
-                img[w][h][1] = 0
+                img_matrix[w][h][1] = 0
             elif g_new_level > 255:
-                img[w][h][1] = 255
+                img_matrix[w][h][1] = 255
             else:
-                img[w][h][1] = g_new_level
+                img_matrix[w][h][1] = g_new_level
 
             if b_new_level < 0:
-                img[w][h][2] = 0
+                img_matrix[w][h][2] = 0
             elif b_new_level > 255:
-                img[w][h][2] = 255
+                img_matrix[w][h][2] = 255
             else:
-                img[w][h][2] = b_new_level
+                img_matrix[w][h][2] = b_new_level
 
-    return img
+    return img_matrix
 
 
 def get_neighborhood_average(img_matrix: array, w: int, h: int, color: int) -> float:
-    neighborhood = [
+    return [
         img_matrix[w - 1][h - 1][color],
         img_matrix[w][h - 1][color],
         img_matrix[w + 1][h - 1][color],
@@ -79,25 +76,70 @@ def get_neighborhood_average(img_matrix: array, w: int, h: int, color: int) -> f
         img_matrix[w - 1][h][color],
     ]
 
-    return np.mean(neighborhood)
 
-
-def calculate_image_average(img_path: str) -> array:
-    img = get_image_matrix(img_path)
-    img_aux = img
-    width, height, _ = get_image_shape(img)
+def calculate_image_average(img_matrix: array) -> array:
+    img_aux = img_matrix
+    width, height, _ = get_image_shape(img_matrix)
 
     for w in range(1, width - 1):
         for h in range(1, height - 1):
-            img[w][h][0] = get_neighborhood_average(img_aux, w, h, 0)
-            img[w][h][1] = get_neighborhood_average(img_aux, w, h, 1)
-            img[w][h][2] = get_neighborhood_average(img_aux, w, h, 2)
+            img_matrix[w][h][0] = calculate_average(
+                get_neighborhood_average(img_aux, w, h, 0)
+            )
+            img_matrix[w][h][1] = calculate_average(
+                get_neighborhood_average(img_aux, w, h, 1)
+            )
+            img_matrix[w][h][2] = calculate_average(
+                get_neighborhood_average(img_aux, w, h, 2)
+            )
 
-    return img
+    return img_matrix
+
+
+def calculate_image_median(img_matrix: array) -> array:
+    img_aux = img_matrix
+    width, height, _ = get_image_shape(img_matrix)
+
+    for w in range(1, width - 1):
+        for h in range(1, height - 1):
+            img_matrix[w][h][0] = calculate_median(
+                get_neighborhood_average(img_aux, w, h, 0)
+            )
+            img_matrix[w][h][1] = calculate_median(
+                get_neighborhood_average(img_aux, w, h, 1)
+            )
+            img_matrix[w][h][2] = calculate_median(
+                get_neighborhood_average(img_aux, w, h, 2)
+            )
+
+    return img_matrix
+
+
+def calculate_average(neighborhood_array: array) -> int:
+    return sum(neighborhood_array) / len(neighborhood_array)
+
+
+def calculate_median(neighborhood_array: array) -> int:
+    index_neighborhood_array = int(len(neighborhood_array) / 2)
+    ordered_neighborhood_array = bubble_sort(neighborhood_array)
+
+    return ordered_neighborhood_array[index_neighborhood_array]
+
+
+def bubble_sort(vetor) -> array:
+
+    for i in range(0, len(vetor) - 1, 1):
+        for j in range(i + 1, len(vetor), 1):
+            if vetor[i] > vetor[j]:
+                temp = vetor[i]
+                vetor[i] = vetor[j]
+                vetor[j] = temp
+
+    return vetor
 
 
 def show_histogram(
-    frequencies_array, color, name: str, output=None, save=False
+    frequencies_array, color, filename_original: str, output_path=None, save=False
 ) -> None:
     X = [i for i in range(256)]
     Y = frequencies_array
@@ -109,13 +151,13 @@ def show_histogram(
     plt.ylabel(f"Pixels frequency")
 
     if save:
-        name = name.split(".")
-        plt.savefig(f"{output}/{name[0]}_{color}_histogram.png")
+        filename_original = filename_original.split(".")
+        plt.savefig(f"{output_path}/{filename_original[0]}_{color}_histogram.png")
     plt.show()
     plt.close()
 
 
-def save_image(array: str, output: str, name: str):
+def save_image(array: str, output: str, name: str) -> None:
     img = Image.fromarray(array, "RGB")
     img.save(f"{output}/{name}.png")
     img.show()
@@ -130,25 +172,120 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    # r, g, b = get_frequencies_arrays(args.img)
+    # Histogram for the original picture
+    img_matrix = get_image_matrix(args.img)
+    r, g, b = get_frequencies_arrays(img_matrix)
 
-    # # Calculate
-    # show_histogram(r, "red", os.path.basename(args.img), output=args.output, save=True)
-    # show_histogram(
-    #     g, "green", os.path.basename(args.img), output=args.output, save=True
-    # )
-    # show_histogram(b, "blue", os.path.basename(args.img), output=args.output, save=True)
+    show_histogram(
+        r, "red", os.path.basename(args.img), output_path=args.output, save=True
+    )
+    show_histogram(
+        g, "green", os.path.basename(args.img), output_path=args.output, save=True
+    )
+    show_histogram(
+        b, "blue", os.path.basename(args.img), output_path=args.output, save=True
+    )
 
-    # new_image = change_brightness(args.img, 10)
-    # save_image(
-    #     new_image,
-    #     args.output,
-    #     f"{str(os.path.basename(args.img)).split('.')[0]}_brightness",
-    # )
+    # Histogram for the picture after brightness
+    new_image = change_brightness(img_matrix, 10)
 
-    new_image_average = calculate_image_average(args.img)
+    save_image(
+        new_image,
+        args.output,
+        f"{str(os.path.basename(args.img)).split('.')[0]}_brightness",
+    )
+    img_brightness_name = (
+        f"{str(os.path.basename(args.img)).split('.')[0]}_brightness.png"
+    )
+    img_matrix = get_image_matrix(os.path.join(args.output, img_brightness_name))
+    r, g, b = get_frequencies_arrays(img_matrix)
+
+    show_histogram(
+        r,
+        "red",
+        img_brightness_name,
+        output_path=args.output,
+        save=True,
+    )
+    show_histogram(
+        g,
+        "green",
+        img_brightness_name,
+        output_path=args.output,
+        save=True,
+    )
+    show_histogram(
+        b,
+        "blue",
+        img_brightness_name,
+        output_path=args.output,
+        save=True,
+    )
+
+    # Histogram for the picture after average
+    new_image_average = calculate_image_average(img_matrix)
     save_image(
         new_image_average,
         args.output,
         f"{str(os.path.basename(args.img)).split('.')[0]}_average",
+    )
+    img_average_name = f"{str(os.path.basename(args.img)).split('.')[0]}_average.png"
+    print(img_average_name)
+    img_matrix = get_image_matrix(os.path.join(args.output, img_average_name))
+    r, g, b = get_frequencies_arrays(img_matrix)
+
+    show_histogram(
+        r,
+        "red",
+        img_average_name,
+        output_path=args.output,
+        save=True,
+    )
+    show_histogram(
+        g,
+        "green",
+        img_average_name,
+        output_path=args.output,
+        save=True,
+    )
+    show_histogram(
+        b,
+        "blue",
+        img_average_name,
+        output_path=args.output,
+        save=True,
+    )
+
+    # Histogram for the picture after median
+    new_image_median = calculate_image_median(img_matrix)
+    save_image(
+        new_image_median,
+        args.output,
+        f"{str(os.path.basename(args.img)).split('.')[0]}_median",
+    )
+    img_median_name = f"{str(os.path.basename(args.img)).split('.')[0]}_median.png"
+    print(img_median_name)
+    img_matrix = get_image_matrix(os.path.join(args.output, img_median_name))
+    r, g, b = get_frequencies_arrays(img_matrix)
+
+    show_histogram(
+        r,
+        "red",
+        img_median_name,
+        output_path=args.output,
+        save=True,
+    )
+    show_histogram(
+        g,
+        "green",
+        img_median_name,
+        output_path=args.output,
+        save=True,
+    )
+    show_histogram(
+        b,
+        "blue",
+        img_median_name,
+        output_path=args.output,
+        save=True,
     )
