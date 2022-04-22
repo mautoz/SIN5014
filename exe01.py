@@ -366,6 +366,7 @@ if __name__ == "__main__":
     )
 
     # Histogram for the picture after median
+    img_matrix = get_image_matrix(args.img)
     new_image_median = calculate_image_median(img_matrix)
     save_image(
         new_image_median,
