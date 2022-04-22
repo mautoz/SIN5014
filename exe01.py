@@ -7,15 +7,42 @@ import os
 
 
 def get_image_matrix(img_path: str) -> array:
+    """
+    Open an image and convert to matrix.
+
+    Parameters
+    ----------
+        img_path : str
+            The path from the image source
+
+    Returns
+    -------
+        An matrix of the image
+    """
     image_matrix = Image.open(img_path)
     return array(image_matrix)
 
 
 def get_image_shape(img_matrix: array):
+    """
+    An image matrix as parameter and return width, height and colors os the image
+    """
     return img_matrix.shape
 
 
 def get_frequencies_arrays(img_matrix: array) -> Tuple[array, array, array]:
+    """
+    Read the matrix and
+
+    Parameters
+    ----------
+        img_matrix : array
+            An array that represents the image.
+
+    Returns
+    -------
+        A tuple with the frequencies of the colors RGB
+    """
     red = [0] * 256
     green = [0] * 256
     blue = [0] * 256
@@ -32,6 +59,20 @@ def get_frequencies_arrays(img_matrix: array) -> Tuple[array, array, array]:
 
 
 def change_brightness(img_matrix: array, level: int) -> array:
+    """
+    Read an image matrix and apply the level of `brightness` you want to change.
+
+    Parameters
+    ----------
+        img_matrix : array
+            An array that represents the image.
+        level: int
+            A number that we use to change the brigthness. Use something between -255 and 255.
+
+    Returns
+    -------
+        A tuple with the frequencies of the colors RGB
+    """
     width, height, _ = get_image_shape(img_matrix)
 
     for w in range(width):
@@ -65,6 +106,24 @@ def change_brightness(img_matrix: array, level: int) -> array:
 
 
 def get_neighborhood_average(img_matrix: array, w: int, h: int, color: int) -> float:
+    """
+    Read an image matrix and apply the level of `brightness` you want to change.
+
+    Parameters
+    ----------
+        img_matrix: array
+            An array that represents the image.
+        w: int
+            Width of the image
+        h: int
+            Height of the image
+        color: int
+            R is 0, G is 1 and B is 2
+
+    Returns
+    -------
+        An array with the RGB
+    """
     return [
         img_matrix[w - 1][h - 1][color],
         img_matrix[w][h - 1][color],
@@ -78,6 +137,18 @@ def get_neighborhood_average(img_matrix: array, w: int, h: int, color: int) -> f
 
 
 def calculate_image_average(img_matrix: array) -> array:
+    """
+    Read an image matrix and
+
+    Parameters
+    ----------
+        img_matrix: array
+            Image matrix.
+
+    Returns
+    -------
+        An array of image after calculate the average.
+    """
     img_aux = img_matrix
     width, height, _ = get_image_shape(img_matrix)
 
@@ -97,6 +168,18 @@ def calculate_image_average(img_matrix: array) -> array:
 
 
 def calculate_image_median(img_matrix: array) -> array:
+    """
+    Read an array of frequencies, show the histogram and save the image.
+
+    Parameters
+    ----------
+        img_matrix: array
+            Image matrix.
+
+    Returns
+    -------
+        An array of image after calculate the median.
+    """
     img_aux = img_matrix
     width, height, _ = get_image_shape(img_matrix)
 
@@ -115,10 +198,12 @@ def calculate_image_median(img_matrix: array) -> array:
     return img_matrix
 
 
+# Just a function to calculate average and avoid np.average
 def calculate_average(neighborhood_array: array) -> int:
     return sum(neighborhood_array) / len(neighborhood_array)
 
 
+# Just a function to calculate median and avoid np.median
 def calculate_median(neighborhood_array: array) -> int:
     index_neighborhood_array = int(len(neighborhood_array) / 2)
     ordered_neighborhood_array = bubble_sort(neighborhood_array)
@@ -126,6 +211,7 @@ def calculate_median(neighborhood_array: array) -> int:
     return ordered_neighborhood_array[index_neighborhood_array]
 
 
+# Just a function to order an array and avoid sort()
 def bubble_sort(vetor) -> array:
 
     for i in range(0, len(vetor) - 1, 1):
@@ -139,8 +225,33 @@ def bubble_sort(vetor) -> array:
 
 
 def show_histogram(
-    frequencies_array, color, filename_original: str, output_path=None, save=False
+    frequencies_array,
+    color,
+    filename_original: str,
+    output_path: str = None,
+    save: bool = False,
 ) -> None:
+    """
+    Read an array of frequencies, show the histogram and save the image.
+
+    Parameters
+    ----------
+        frequencies_array: array
+            Array with the frequencies of color.
+        color: str
+            Color R, G or B.
+        filename_original: str
+            Original name of the file.
+        output_path: str
+            Output directory where the histogram will be save.
+        save: bool
+            Default is false. Save an image case True.
+
+    Returns
+    -------
+        Show a picture on screen and save an image.
+    """
+
     X = [i for i in range(256)]
     Y = frequencies_array
 
@@ -157,6 +268,7 @@ def show_histogram(
     plt.close()
 
 
+# Simple function to save the image.
 def save_image(array: str, output: str, name: str) -> None:
     img = Image.fromarray(array, "RGB")
     img.save(f"{output}/{name}.png")
