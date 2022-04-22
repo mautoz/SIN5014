@@ -265,10 +265,14 @@ def save_image(array: str, output: str, name: str) -> None:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Criando histogramas para imagens RGB")
-    parser.add_argument("--img", type=str, help="Caminho da imagem que será analisada")
+    parser = argparse.ArgumentParser(
+        description="Show histogram, change brightness, calculate image average and median"
+    )
+    parser.add_argument("--img", type=str, help="Path from the image")
     parser.add_argument(
-        "--output", type=str, help="Pasta em que as imagens serão salvas"
+        "--output",
+        type=str,
+        help="Path where we save the histogram and the image after effects",
     )
     args = parser.parse_args()
 
